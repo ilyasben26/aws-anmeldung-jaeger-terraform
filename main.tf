@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_iam_role" "lambda_role" {
-  name               = "terraform_aws_lambda_role"
+  name               = "aj_lambda_role"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -22,7 +22,8 @@ EOF
 }
 
 # IAM policy for logging lambda
-
+# TODO: create new S3 bucket for data.json and change the resource in the role
+# TODO: the same for DDB
 resource "aws_iam_policy" "iam_policy_for_lambda" {
 
   name        = "aws_iam_policy_for_terraform_aws_lambda_role"
@@ -33,6 +34,7 @@ resource "aws_iam_policy" "iam_policy_for_lambda" {
   "Version": "2012-10-17",
   "Statement": [
     {
+      "Sid": "LoggingCloudWatch",
       "Action": [
         "logs:CreateLogGroup",
         "logs:CreateLogStream",
@@ -40,7 +42,28 @@ resource "aws_iam_policy" "iam_policy_for_lambda" {
       ],
       "Resource": "arn:aws:logs:*:*:*",
       "Effect": "Allow"
-    }
+    },
+    {
+        "Sid": "S3PutData",
+		"Effect": "Allow",
+		"Action": "s3:PutObject",
+		"Resource": "arn:aws:s3:::anmeldung-jaeger.com/data.json" 
+	},
+    {
+		"Sid": "DDBGetPutCache",
+		"Effect": "Allow",
+		"Action": [
+			"dynamodb:GetItem",
+			"dynamodb:PutItem"
+		],
+		"Resource": "arn:aws:dynamodb:eu-central-1:045122203331:table/ddb-anmeldung-jaeger-lambda-cache"
+	},
+    {
+		"Sid": "SNSPublishMessage",
+		"Effect": "Allow",
+		"Action": "sns:Publish",
+		"Resource": "arn:aws:sns:eu-central-1:045122203331:topic-anmeldung-jaeger-bremen"
+	}
   ]
 }
 EOF
@@ -64,12 +87,19 @@ data "archive_file" "zip_the_python_code" {
 # Create a lambda function
 # In terraform ${path.module} is the current directory.
 resource "aws_lambda_function" "terraform_lambda_func" {
-  filename      = "${path.module}/python/checkBremen.zip"
-  function_name = "aj-checkBremen-lambda-function"
-  role          = aws_iam_role.lambda_role.arn
-  handler       = "checkBremen.lambda_handler"
-  runtime       = "python3.7"
-  depends_on    = [aws_iam_role_policy_attachment.attach_iam_policy_to_iam_role]
+  filename         = "${path.module}/python/checkBremen.zip"
+  function_name    = "aj-checkBremen-lambda-function"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "lambda_function.lambda_handler"
+  runtime          = "python3.7"
+  depends_on       = [aws_iam_role_policy_attachment.attach_iam_policy_to_iam_role]
+  source_code_hash = data.archive_file.zip_the_python_code.output_base64sha256
+  timeout          = 20
+  environment {
+    variables = {
+      TZ = "Europe/Berlin"
+    }
+  }
 }
 
 
