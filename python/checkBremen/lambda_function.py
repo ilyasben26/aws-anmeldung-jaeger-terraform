@@ -11,7 +11,7 @@ s3_client = boto3.client('s3')
 SNS_TOPIC_ARN = "arn:aws:sns:eu-central-1:045122203331:topic-anmeldung-jaeger-bremen"
 TABLE_NAME = "ddb-anmeldung-jaeger-lambda-cache"
 LAST_MESSAGE_TIME_KEY = "LastMessageTime"
-BUCKET_NAME = "anmeldung-jaeger.com"
+BUCKET_NAME = "aj-bucket-lambda-outputs"
 OBJECT_KEY = "data.json"
 
 

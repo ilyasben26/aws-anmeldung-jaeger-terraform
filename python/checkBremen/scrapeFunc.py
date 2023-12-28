@@ -169,9 +169,6 @@ def check_bremen(input_list):
                 print(f"DEBUG: Appointments available for {location_dict['location']}")
                 status = "available"
                 days = parse_days(response.text)
-                # quick debug:
-                if location_dict['location'] == "BürgerServiceCenter-Mitte":
-                    print(response.text)
             else:
                 print(f"DEBUG: Unexpected result for {location_dict['location']}")
                 status = "unexpected"
