@@ -1,6 +1,4 @@
 # IAM policy for logging lambda
-# TODO: create new S3 bucket for data.json and change the resource in the role
-# TODO: the same for DDB
 resource "aws_iam_policy" "iam_policy_for_lambda" {
 
   name        = "aws_iam_policy_for_terraform_aws_lambda_role"
