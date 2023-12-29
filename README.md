@@ -17,8 +17,8 @@ I will be using the following services:
 - *Amazon Route 53*: to register and configure the domain.
 - *Amazon EventBridge*: to run the lambda functions every 5 minutes.
 - *AWS IAM*: to configure the necessary roles and permissions.
-- *AWS Amplify*: to host the front-end website
-- *Amazon API Gateway*: to enable access to the backend via the frontend
+- *AWS Amplify*: to host the front-end website.
+- *Amazon API Gateway*: to enable access to the backend via the frontend.
 
 Moreover, I will manage some of the infrastructure using Terraform, the following will be managed with Terraform:
 - *AWS Lambda*
@@ -61,9 +61,9 @@ GET /termine/location?mdt=701&select_cnc=1&cnc-8580=0&cnc-8582=0&cnc-8583=0&cnc-
 &cnc-8575=0&cnc-8578=0&cnc-8590=0 HTTP/1.1
 ```
 After some testing, I came to the following conclusions:
-- `mdt` is an id for which location the appointment is booked
+- `mdt` is an id for which location the appointment is booked.
 - `select_cnc` must always be set to 1.
-- `cnc-$$$$` are used for tracking which services the user wants to book and how many of them, for Anmeldung services, it is either set to 1 or 0
+- `cnc-$$$$` are used for tracking which services the user wants to book and how many of them, for Anmeldung services, it is either set to 1 or 0.
 
 After this request, we get a summary page of all the services we want to book:
 
@@ -107,19 +107,19 @@ Connection: close
 ```
 
 After analysing these two requests and some testing, I came to the following conclusions:
-- The browser asked to know my location before sending the POST request, this has something to do with `gpc_lat` and `gps_long` parameters, it seems like this is being used to suggest which location is closest to the user and has no importance for the workflow. If the user choose to block the location request, these two parameters are set to 999
-- `loc` and `select_location` are used for the location. `loc` is an ID and `select_location` always has the name of the location plus *auswählen*
+- The browser asked to know my location before sending the POST request, this has something to do with `gpc_lat` and `gps_long` parameters, it seems like this is being used to suggest which location is closest to the user and has no importance for the workflow. If the user choose to block the location request, these two parameters are set to 999.
+- `loc` and `select_location` are used for the location. `loc` is an ID and `select_location` always has the name of the location plus *auswählen*.
 
 The last GET request to `/termine/suggest` is used to fetch the results of the previous POST request by showing the user which appointments are available, in case now appointment is available, the following is shown:
 
 ![Pasted image 20231222154717](https://github.com/ilyasben26/aws-anmeldung-jaeger/assets/73348981/958c889a-227e-4d0e-852c-ba277f764c7a)
 
 To summarise the following is needed to check if appointments are available:
-1. Make a GET request to the portal to get a session cookie (`/termine`)
-3. Make a GET request to the specific page for a location (`/termine/select2?md=$id`)
-4. Make a GET request in which we specify the request service using the url parameters (`/termine/location?mdt=$id&select_cnc=1&cnc-8580=0 ...`)
-5. Make a POST request in which we specify the request service as using url parameters as well as some parameters in the request body (`/termine/location?mdt=$id&select_cnc=1&cnc-8580=0 ...`) 
-6. Make a final GET request to get the results (`/termine/suggest`)
+1. Make a GET request to the portal to get a session cookie (`/termine`).
+3. Make a GET request to the specific page for a location (`/termine/select2?md=$id`).
+4. Make a GET request in which we specify the request service using the url parameters (`/termine/location?mdt=$id&select_cnc=1&cnc-8580=0 ...`).
+5. Make a POST request in which we specify the request service as using url parameters as well as some parameters in the request body (`/termine/location?mdt=$id&select_cnc=1&cnc-8580=0 ...`).
+6. Make a final GET request to get the results (`/termine/suggest`).
 
 Armed with this knowledge of how the portal works, I can now begin automatising the appointment checking process.
 
@@ -129,10 +129,10 @@ Now, to automate the process, I will be using Python along with the `requests` l
 To organise the Lambda functions, I will need to make a Lambda function for each City since the portals differ from city to city and as such, the process and code for checking the portals differs as well.
 
 I called lambda function `lambda-anmeldung-jaeger-checkBremen`, it does the following in order:
-1. Check all the locations in the Bremen portal using HTTPs requests
-2. Write the results as a JSON object to an S3 bucket called `anmeldung-jaeger.com` as `data.json`
-3. If any of location has available appointments, it publishes a message to the SNS topic for Bremen
-	- When publishing messages, it uses a message throttling system which only allows it to send on message every 20 minutes, this system uses a DynamoDB entry as a way to track when the last message was sent and act accordingly
+1. Check all the locations in the Bremen portal using HTTPs requests.
+2. Write the results as a JSON object to an S3 bucket called `anmeldung-jaeger.com` as `data.json`.
+3. If any of location has available appointments, it publishes a message to the SNS topic for Bremen.
+	- When publishing messages, it uses a message throttling system which only allows it to send on message every 20 minutes, this system uses a DynamoDB entry as a way to track when the last message was sent and act accordingly.
 
 Here is a small snippet of the lambda function's event handler which summarises the previously described behaviour:
 ```python
