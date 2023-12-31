@@ -1,8 +1,8 @@
 # Create an EventBridge rule (scheduler) that triggers every 5 minutes
 resource "aws_cloudwatch_event_rule" "lambda_scheduler_rule" {
   name                = "aj-checkBremen-lambda-scheduler"
-  schedule_expression = "rate(5 minutes)" # Trigger every 5 minutes
-  state               = "DISABLED"
+  schedule_expression = "rate(15 minutes)" # Trigger every x minutes
+  state               = "ENABLED"
 }
 
 # Create a target for the EventBridge rule to invoke the Lambda function
