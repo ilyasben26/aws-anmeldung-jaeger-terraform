@@ -43,7 +43,7 @@ Bremen uses a unified portal for booking all kinds of appointments, the first pa
 ![Pasted image 20231222151043](https://github.com/ilyasben26/aws-anmeldung-jaeger/assets/73348981/89ba5764-d556-4138-bb31-3695cd146ff4)
 
 As we can see the initial GET request to the portal is made via the url `https://termin.bremen.de/termine/`, from this request, we learn the following:
-- A session cookie called `tvo_session` is set to establish a session. The session lasts for 24 minutes as show below
+- A session cookie called `tvo_session` is set to establish a session. The session lasts for 24 minutes as shown below
 
 After choosing one of the options from the list, a GET request is made to the following url `https://termin.bremen.de/termine/select2?md=5`:
 
@@ -121,7 +121,7 @@ To summarise the following is needed to check if appointments are available:
 5. Make a POST request in which we specify the request service as using url parameters as well as some parameters in the request body (`/termine/location?mdt=$id&select_cnc=1&cnc-8580=0 ...`).
 6. Make a final GET request to get the results (`/termine/suggest`).
 
-Armed with this knowledge of how the portal works, I can now begin automatising the appointment checking process.
+Armed with this knowledge of how the portal works, I can now begin automating the appointment checking process.
 
 ## 2. Lambda function
 Now, to automate the process, I will be using Python along with the `requests` library to make the needed GET and POST requests. 
